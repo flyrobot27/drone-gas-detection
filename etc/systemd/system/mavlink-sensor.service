@@ -1,0 +1,11 @@
+[Unit]
+Description=Mavlink Sensor reading Redis (Refresh = 0.2)
+After=docker.service
+
+[Service]
+User=syheung
+WorkingDirectory=/home/syheung/Documents/drone-gas-detection/
+ExecStart=/home/syheung/Documents/drone-gas-detection/venv/bin/python3 -m mavlink -f 213 -r 0.2
+
+[Install]
+WantedBy=multi-user.target

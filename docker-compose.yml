@@ -1,0 +1,28 @@
+services:
+  redis:
+    restart: unless-stopped
+    image: redis:7.4-rc2
+    command: ["redis-server", "/etc/redis/redis.conf"]
+    ports:
+      - 6379:6379
+    volumes:
+      - ./redis.conf:/etc/redis/redis.conf
+    networks:
+      - mavlink-network
+
+  sensors:
+    restart: unless-stopped
+    privileged: true
+    build:
+      context: .
+      dockerfile: Dockerfile.sensors
+    depends_on:
+      - redis
+    environment:
+      - REDIS_HOST=redis
+    networks:
+      - mavlink-network
+
+networks:
+  mavlink-network:
+    driver: bridge
