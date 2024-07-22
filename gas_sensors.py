@@ -4,8 +4,10 @@ import adafruit_ads1x15.ads1115 as ADS
 from adafruit_ads1x15.analog_in import AnalogIn
 import time
 from decouple import config
-from utils import connect_redis, SensorReadingFieldNames
+from utils import connect_redis, print_if_debug, SensorReadingFieldNames
 import argparse
+
+DEBUG = False
 
 def init_sensor(pin = ADS.P0) -> AnalogIn:
     """Initialize the analog gas sensor
@@ -37,24 +39,31 @@ def main():
                         type=float,
                         help='Refresh rate in seconds. Default to 0.1',
                         default=0.1)
+    parser.add_argument('-d', '--debug',
+                        action='store_true',
+                        help='Enable debug mode')
 
     args = parser.parse_args()
     # connect to redis
-    r = connect_redis(args.password)
+    global DEBUG
+    DEBUG = args.debug
+
+    r = connect_redis(args.password, DEBUG)
     sensor = init_sensor()
+
 
     while True:
         # TODO Filter and calibrate sensor value
         # currently just send the raw value
         r.set(SensorReadingFieldNames.GAS_SENSOR_VOLTAGE, sensor.voltage)
         r.set(SensorReadingFieldNames.GAS_SENSOR_VALUE, sensor.value)
-        print("Set Sensor Voltage and Value to redis")
+        print_if_debug("Set Sensor Voltage and Value to redis", DEBUG)
         time.sleep(args.refresh_rate)
 
 if __name__ == "__main__":
     try:
         main()
     except KeyboardInterrupt:
-        print("Exiting program")
+        print_if_debug("Keyboard Interrupt. Exiting program", DEBUG)
         exit(0)
     

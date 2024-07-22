@@ -26,12 +26,13 @@ class SensorReadingFieldNames(str, Enum):
         return tuple(SensorReadingFieldNames)
 
 
-def connect_redis(password: str) -> redis.Redis:
+def connect_redis(password: str, debug: bool = False) -> redis.Redis:
     """
     Connect to redis.
 
     Args:
         password (str): password of redis server
+        debug (bool, optional): debug flag. Defaults to False.
     
     Returns:
         redis.Redis: redis connection
@@ -48,7 +49,7 @@ def connect_redis(password: str) -> redis.Redis:
         print("Failed to connect to redis server")
         exit(1)
     else:
-        print("Connected to redis server")
+        print_if_debug("Connected to redis server", debug)
         return r
 
 
@@ -78,3 +79,13 @@ def is_none_or_whitespace(value: str) -> bool:
         bool: True if value is None or whitespace, False otherwise
     """
     return value is None or value.isspace()
+
+def print_if_debug(message: str, debug: bool) -> None:
+    """Print message if debug is True
+
+    Args:
+        message (str): message to print
+        debug (bool): debug flag
+    """
+    if debug:
+        print(message)

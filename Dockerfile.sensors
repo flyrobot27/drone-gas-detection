@@ -6,8 +6,8 @@ WORKDIR /app
 RUN pip install --no-cache-dir -r requirements.txt
 
 # copy the rest of the files
-COPY sensors.py /app/sensors.py
+COPY gas_sensors.py /app/gas_sensors.py
 COPY utils.py /app/utils.py
 COPY .env /app/.env
 
-CMD ["python", "sensors.py"]
+CMD ["python", "gas_sensors.py"]
