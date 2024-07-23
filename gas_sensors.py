@@ -86,8 +86,8 @@ def main():
         temperature = r.get(SensorReadingFieldNames.TEMPERATURE)
         humidity = r.get(SensorReadingFieldNames.HUMIDITY)
 
-        temperature = convert_to_float_or_default(temperature, float('nan'))
-        humidity = convert_to_float_or_default(humidity, float('nan'))
+        temperature = convert_to_float_or_default(temperature)
+        humidity = convert_to_float_or_default(humidity)
         
         ppm = calculate_ppm(sensor.voltage, temperature, humidity)
         r.set(SensorReadingFieldNames.GAS_PPM, ppm, ex=args.expire_time)

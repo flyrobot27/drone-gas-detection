@@ -73,7 +73,7 @@ def read_and_send(r: redis.Redis, port: int, fc_sysid: int, refresh_second: floa
             gas_reading = r.get(n.value)
             print("Got value from redis:", gas_reading)
             # convert gas reading to float
-            gas_reading = convert_to_float_or_default(gas_reading, float('nan'))
+            gas_reading = convert_to_float_or_default(gas_reading)
             # round to 2 decimal places
             gas_reading = round(gas_reading, 2)
 
