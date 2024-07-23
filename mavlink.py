@@ -3,8 +3,10 @@ import redis
 from decouple import config
 import argparse
 from time import sleep, time
-from utils import connect_redis, convert_to_float_or_default, is_none_or_whitespace, SensorReadingFieldNames
+from utils import connect_redis, convert_to_float_or_default, is_none_or_whitespace, SensorReadingFieldNames, print_if_debug
 from typing import Dict, Tuple
+
+DEBUG = False
 
 class SensorMavlinkConnection:
     """
@@ -41,7 +43,7 @@ class SensorMavlinkConnection:
         """
         time_boot_ms = int((time() - self.mavsender.start_time) * 1000)
         self.mavsender.mav.named_value_float_send(time_boot_ms, self.encoded_name, value)
-        print(f"Sent {self.sensor_name} to drone: {value}")
+        print_if_debug(f"Sent {self.sensor_name} to drone: {value}", DEBUG)
     
 
 def read_and_send(r: redis.Redis, port: int, fc_sysid: int, refresh_second: float = 1) -> None:
@@ -67,11 +69,11 @@ def read_and_send(r: redis.Redis, port: int, fc_sysid: int, refresh_second: floa
         sensor_mavlink[n] = mavsender
     
     while True:
-        print("Sending sensor data to drone")
+        print_if_debug("Sending sensor data to drone", DEBUG)
         for n in name_enums:
             # read value from redis
             gas_reading = r.get(n.value)
-            print("Got value from redis:", gas_reading)
+            print_if_debug(f"Got value from redis: {gas_reading}", DEBUG)
             # convert gas reading to float
             gas_reading = convert_to_float_or_default(gas_reading)
             # round to 2 decimal places
@@ -80,7 +82,7 @@ def read_and_send(r: redis.Redis, port: int, fc_sysid: int, refresh_second: floa
             # send gas reading via mavsender
             mavsender = sensor_mavlink[n]
             mavsender.send(gas_reading)
-            print(f"Sent {n.value} to drone: {gas_reading}")
+            print_if_debug(f"Sent {n.value} to drone: {gas_reading}", DEBUG)
 
         sleep(refresh_second)
 
@@ -103,12 +105,18 @@ def main():
                         type=float,
                         help='Refresh rate in seconds. Default to 1',
                         default=1)
+    parser.add_argument('-d', '--debug',
+                        action='store_true',
+                        help='Enable debug mode')
     args = parser.parse_args()
 
     r = connect_redis(args.password)
 
+    global DEBUG
+    DEBUG = args.debug
+
     # start read and send thread
-    print("Starting mavlink thread. Refresh time:", args.refresh_rate)
+    print_if_debug(f"Starting mavlink thread. Refresh time: {args.refresh_rate}", DEBUG)
     read_and_send(r, args.port, args.fc_sysid, args.refresh_rate)
 
 
