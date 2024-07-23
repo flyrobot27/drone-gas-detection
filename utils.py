@@ -78,7 +78,7 @@ def is_none_or_whitespace(value: str) -> bool:
     Returns:
         bool: True if value is None or whitespace, False otherwise
     """
-    return value is None or value.isspace()
+    return value is None or str(value).isspace()
 
 def print_if_debug(message: str, debug: bool) -> None:
     """Print message if debug is True
