@@ -3,7 +3,7 @@ import redis
 from decouple import config
 import argparse
 from time import sleep, time
-from utils import connect_redis, is_float, is_none_or_whitespace, SensorReadingFieldNames
+from utils import connect_redis, convert_to_float_or_default, is_none_or_whitespace, SensorReadingFieldNames
 from typing import Dict, Tuple
 
 class SensorMavlinkConnection:
@@ -72,12 +72,10 @@ def read_and_send(r: redis.Redis, port: int, fc_sysid: int, refresh_second: floa
             # read value from redis
             gas_reading = r.get(n.value)
             print("Got value from redis:", gas_reading)
-            if gas_reading is None or not is_float(gas_reading):
-                # use a default failsafe gas reading value
-                gas_reading = config("GAS_DEFAULT_READING", default=float('nan'), cast=float)
-            else:
-                # round to 2 decimal place for MP display
-                gas_reading = round(float(gas_reading), 2)
+            # convert gas reading to float
+            gas_reading = convert_to_float_or_default(gas_reading, float('nan'))
+            # round to 2 decimal places
+            gas_reading = round(gas_reading, 2)
 
             # send gas reading via mavsender
             mavsender = sensor_mavlink[n]

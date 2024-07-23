@@ -89,3 +89,23 @@ def print_if_debug(message: str, debug: bool) -> None:
     """
     if debug:
         print(message)
+
+def convert_to_float_or_default(value: str, default: float = float('nan')) -> float:
+    """Convert the value to float or return the default value
+
+    Args:
+        value (str): value to convert
+        default (float, optional): default value if failed to convert. Defaults to float('nan').
+
+    Returns:
+        float: converted value
+    """
+    # check if default is float / whitespace
+    if is_none_or_whitespace(default) or not is_float(default):
+        raise ValueError("Default value must be a float")
+
+    if is_none_or_whitespace(value) or not is_float(value):
+        # use a default failsafe gas reading value
+        return default
+    else:
+        return float(value)
