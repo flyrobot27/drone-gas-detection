@@ -1,7 +1,7 @@
 import time
 import board
 import adafruit_dht
-from utils import connect_redis, print_if_debug, SensorReadingFieldNames
+from utils import connect_redis, print_if_debug, SensorReadingFieldNames, is_float, is_none_or_whitespace
 import argparse
 from decouple import config
 
@@ -35,6 +35,11 @@ def main():
     parser.add_argument('-d', '--debug',
                         action='store_true',
                         help='Enable debug mode')
+
+    parser.add_argument('-e', '--expire-time',
+                        type=int,
+                        help='Set expire time for the key in seconds. Default to 10 seconds',
+                        default=10)
     
     args = parser.parse_args()
 
@@ -55,8 +60,12 @@ def main():
         try:
             temperature = sensor.temperature
             humidity = sensor.humidity
-            r.set(SensorReadingFieldNames.TEMPERATURE, temperature)
-            r.set(SensorReadingFieldNames.HUMIDITY, humidity)
+
+            if is_none_or_whitespace(temperature) or is_none_or_whitespace(humidity):
+                raise RuntimeError("Failed to read temperature or humidity")
+
+            r.set(SensorReadingFieldNames.TEMPERATURE, temperature, ex=args.expire_time)
+            r.set(SensorReadingFieldNames.HUMIDITY, humidity, ex=args.expire_time)
             print_if_debug("Set Temperature and Humidity to redis", DEBUG)
         except RuntimeError as error:
             print(error.args[0])

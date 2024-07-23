@@ -4,8 +4,9 @@ import adafruit_ads1x15.ads1115 as ADS
 from adafruit_ads1x15.analog_in import AnalogIn
 import time
 from decouple import config
-from utils import connect_redis, print_if_debug, SensorReadingFieldNames
+from utils import connect_redis, convert_to_float_or_default, print_if_debug, SensorReadingFieldNames
 import argparse
+import math
 
 DEBUG = False
 
@@ -40,8 +41,12 @@ def calculate_ppm(voltage: float, temperature: float, humidity: float) -> float:
     Returns:
         float: the PPM value
     """
-
+    if math.isnan(temperature) or math.isnan(humidity):
+        return float('nan')
     
+    # TODO Read the RS / RO Curve for MQ 135
+    return 0
+
 
 def main():
     parser = argparse.ArgumentParser(description='Read analog sensor data and send it to redis')
@@ -56,6 +61,10 @@ def main():
     parser.add_argument('-d', '--debug',
                         action='store_true',
                         help='Enable debug mode')
+    parser.add_argument('-e', '--expire-time',
+                        type=int,
+                        help='Set expire time for the key in seconds. Default to 10 seconds',
+                        default=10)
 
     args = parser.parse_args()
     # connect to redis
@@ -67,12 +76,23 @@ def main():
 
 
     while True:
-        # TODO Filter and calibrate sensor value
-        # currently just send the raw value
-        r.set(SensorReadingFieldNames.GAS_SENSOR_VOLTAGE, sensor.voltage)
-        r.set(SensorReadingFieldNames.GAS_SENSOR_VALUE, sensor.value)
+        # send raw value
+        r.set(SensorReadingFieldNames.GAS_SENSOR_VOLTAGE, sensor.voltage, ex=args.expire_time)
+        r.set(SensorReadingFieldNames.GAS_SENSOR_VALUE, sensor.value, ex=args.expire_time)
         print_if_debug("Set Sensor Voltage and Value to redis", DEBUG)
+
+        # send calculated PPM value
+        # read temp and humidity from redis
+        temperature = r.get(SensorReadingFieldNames.TEMPERATURE)
+        humidity = r.get(SensorReadingFieldNames.HUMIDITY)
+
+        temperature = convert_to_float_or_default(temperature, float('nan'))
+        humidity = convert_to_float_or_default(humidity, float('nan'))
+        
+        ppm = calculate_ppm(sensor.voltage, temperature, humidity)
+        r.set(SensorReadingFieldNames.GAS_PPM, ppm, ex=args.expire_time)
         time.sleep(args.refresh_rate)
+
 
 if __name__ == "__main__":
     try:
