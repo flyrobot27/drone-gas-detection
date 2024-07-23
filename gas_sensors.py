@@ -29,6 +29,20 @@ def init_sensor(pin = ADS.P0) -> AnalogIn:
 
     return sensor
 
+def calculate_ppm(voltage: float, temperature: float, humidity: float) -> float:
+    """Calculate the PPM value of the gas sensor
+
+    Args:
+        voltage (float): the voltage value of the sensor
+        temperature (float): the temperature value
+        humidity (float): the humidity value
+
+    Returns:
+        float: the PPM value
+    """
+
+    
+
 def main():
     parser = argparse.ArgumentParser(description='Read analog sensor data and send it to redis')
     parser.add_argument('-p', '--password', 

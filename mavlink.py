@@ -74,7 +74,7 @@ def read_and_send(r: redis.Redis, port: int, fc_sysid: int, refresh_second: floa
             print("Got value from redis:", gas_reading)
             if gas_reading is None or not is_float(gas_reading):
                 # use a default failsafe gas reading value
-                gas_reading = config("GAS_DEFAULT_READING", default=-1.0, cast=float)
+                gas_reading = config("GAS_DEFAULT_READING", default=float('nan'), cast=float)
             else:
                 # round to 2 decimal place for MP display
                 gas_reading = round(float(gas_reading), 2)
