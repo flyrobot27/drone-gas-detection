@@ -12,6 +12,7 @@ class SensorReadingFieldNames(str, Enum):
     GAS_SENSOR_VOLTAGE = "GAS_VOLTAGE"
     GAS_PPM = "GAS_PPM"
     GAS_SENSOR_VALUE = "GAS_VALUE"
+    GAS_SENSOR_PERCENT = "GAS_PERCENT"
     TEMPERATURE = "TEMP"
     HUMIDITY = "HUMIDITY"
 

@@ -73,12 +73,13 @@ def main():
 
     r = connect_redis(args.password, DEBUG)
     sensor = init_sensor()
-
+    sensor_max_value = config('SENSOR_ANALOG_VALUE_MAX', default=1023, cast=int)
 
     while True:
         # send raw value
         r.set(SensorReadingFieldNames.GAS_SENSOR_VOLTAGE, sensor.voltage, ex=args.expire_time)
         r.set(SensorReadingFieldNames.GAS_SENSOR_VALUE, sensor.value, ex=args.expire_time)
+        r.set(SensorReadingFieldNames.GAS_SENSOR_PERCENT, sensor.value / sensor_max_value, ex=args.expire_time)
         print_if_debug("Set Sensor Voltage and Value to redis", DEBUG)
 
         # send calculated PPM value
