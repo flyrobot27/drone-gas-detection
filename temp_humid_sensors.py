@@ -76,3 +76,12 @@ def main():
 
         time.sleep(args.refresh_rate)
 
+if __name__ == "__main__":
+    try:
+        main()
+    except KeyboardInterrupt:
+        print("Exiting...")
+        exit(0)
+    except Exception as error:
+        print(error)
+        exit(1)
