@@ -10,6 +10,20 @@ services:
     networks:
       - mavlink-network
 
+  mavlink_sensor:
+    restart: unless-stopped
+    privileged: true
+    build:
+      context: .
+      dockerfile: Dockerfile.mavlink_sensor
+    depends_on:
+      - redis
+    environment:
+      - REDIS_HOST=redis
+      - FC_SYSID=213
+    networks:
+      - mavlink-network
+
   gas_sensors:
     restart: unless-stopped
     privileged: true
