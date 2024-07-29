@@ -91,20 +91,20 @@ def main():
     parser = argparse.ArgumentParser(description='Send gas sensor data to drone via mavlink')
     parser.add_argument('-p', '--password', 
                         type=str, 
-                        help='Redis password. Default to REDIS_PASSWORD env variable', 
+                        help='Redis password. Default to empty or REDIS_PASSWORD env variable', 
                         default=config('REDIS_PASSWORD', default=''))
     parser.add_argument('-P', '--port',
                         type=int,
-                        help='Mavlink router port. Default to 5760',
-                        default=5760)
+                        help='Mavlink router port. Default to 5760 or MAVLINK_ROUTER_PORT env variable',
+                        default=config('MAVLINK_ROUTER_PORT', default=5760, cast=int))
     parser.add_argument('-f', '--fc-sysid',
                         type=int,
-                        help='Flight controller system id. Default to FC_SYSID env variable',
-                        default=config('FC_SYSID', default=1))
+                        help='Flight controller system id. Default to 1 or FC_SYSID env variable',
+                        default=config('FC_SYSID', default=1, cast=int))
     parser.add_argument('-r', '--refresh-rate',
                         type=float,
-                        help='Refresh rate in seconds. Default to 1',
-                        default=1)
+                        help='Refresh rate in seconds. Default to 0.2 or MV_REFRESH_RATE env variable',
+                        default=config('MAVLINK_REFRESH_RATE', default=0.2, cast=float))
     parser.add_argument('-d', '--debug',
                         action='store_true',
                         help='Enable debug mode')
