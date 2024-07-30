@@ -12,6 +12,7 @@ services:
 
   mavlink-router:
     restart: unless-stopped
+    privileged: true
     build:
       context: .
       dockerfile: Dockerfile.mavlink_router
@@ -34,6 +35,7 @@ services:
       - mavlink-router
     environment:
       - REDIS_HOST=redis
+      - MAVLINK_ROUTER_HOST=mavlink-router
       - FC_SYSID=213
     networks:
       - mavlink-network

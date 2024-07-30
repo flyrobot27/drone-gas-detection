@@ -17,7 +17,8 @@ RUN cd /mavlink-router \
     && ninja -C build
 
 RUN mkdir /etc/mavlink-router
-COPY ./etc/mavlink-router/mavlink-router.conf /etc/mavlink-router/main.conf
+COPY ./etc/mavlink-router/main.conf /etc/mavlink-router/main.conf
 
-CMD mavlink-routerd
+EXPOSE 5760
+ENTRYPOINT ["/mavlink-router/build/src/mavlink-routerd"]
 
