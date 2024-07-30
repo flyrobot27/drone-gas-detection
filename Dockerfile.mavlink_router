@@ -17,7 +17,7 @@ RUN cd /mavlink-router \
     && ninja -C build
 
 RUN mkdir /etc/mavlink-router
-COPY files/mavlink-router.conf /etc/mavlink-router/main.conf
+COPY ./etc/mavlink-router/mavlink-router.conf /etc/mavlink-router/main.conf
 
 CMD mavlink-routerd
 
