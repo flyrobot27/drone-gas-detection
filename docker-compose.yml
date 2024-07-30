@@ -10,7 +10,20 @@ services:
     networks:
       - mavlink-network
 
-  mavlink_sensor:
+  mavlink-router:
+    restart: unless-stopped
+    build:
+      context: .
+      dockerfile: Dockerfile.mavlink_router
+    ports:
+      - 5760:5760
+    devices:
+      - /dev/ttyUSB0:/dev/ttyUSB0
+      - /dev/ttyAMA0:/dev/ttyAMA0
+    networks:
+      - mavlink-network
+
+  mavlink-sensor:
     restart: unless-stopped
     privileged: true
     build:
@@ -18,6 +31,7 @@ services:
       dockerfile: Dockerfile.mavlink_sensor
     depends_on:
       - redis
+      - mavlink-router
     environment:
       - REDIS_HOST=redis
       - FC_SYSID=213
