@@ -44,7 +44,7 @@ def main():
     args = parser.parse_args()
 
     # check if args.refresh_rate is lower than 2.0
-    if args.refresh_rate - 2.0 < 0.0001:
+    if args.refresh_rate < 2.0:
         parser.error("Refresh rate cannot be lower than 2.0")    
 
     global DEBUG
