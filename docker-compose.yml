@@ -20,7 +20,7 @@ services:
       - 5760:5760
     devices:
       - /dev/ttyUSB0:/dev/ttyUSB0
-      - /dev/ttyAMA0:/dev/ttyAMA0
+      - /dev/serial0:/dev/serial0
     networks:
       - mavlink-network
 
@@ -36,6 +36,7 @@ services:
     environment:
       - REDIS_HOST=redis
       - MAVLINK_ROUTER_HOST=mavlink-router
+      - MAVLINK_ROUTER_PORT=5760
       - FC_SYSID=213
     networks:
       - mavlink-network
