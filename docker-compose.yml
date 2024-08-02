@@ -20,7 +20,7 @@ services:
       - 5760:5760
     devices:
       - /dev/ttyUSB0:/dev/ttyUSB0
-      - /dev/serial0:/dev/serial0
+      - /dev/ttyACM0:/dev/ttyACM0
     networks:
       - mavlink-network
 
