@@ -5,9 +5,9 @@ from adafruit_ads1x15.analog_in import AnalogIn
 class MQ135(object):
     """ Class for dealing with MQ13 Gas Sensors """
     # The load resistance on the board
-    RLOAD = 10.0
+    RLOAD = 1000.0
     # Calibration resistance at atmospheric CO2 level
-    RZERO = 73.32
+    RZERO = 381778.9509346568
     # Parameters for calculating ppm of CO2 from sensor resistance
     PARA = 116.6020682
     PARB = 2.769034857
