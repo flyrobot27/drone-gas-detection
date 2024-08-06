@@ -55,6 +55,10 @@ def main():
                         type=float,
                         help='Correction factor for the mean value. Default to GAS_CORRECTION_FACTOR env variable or 6.0',
                         default=config('GAS_CORRECTION_FACTOR', default=6.0, cast=float))
+    parser.add_argument('-s', '--sensor-max-value',
+                        type=int,
+                        help='Sensor max value. Default to SENSOR_ANALOG_VALUE_MAX env variable or 1023',
+                        default=config('SENSOR_ANALOG_VALUE_MAX', default=1023, cast=int))
 
     args = parser.parse_args()
     # connect to redis
@@ -63,10 +67,10 @@ def main():
 
     r = connect_redis(args.password, DEBUG)
     sensor = init_sensor()
-    sensor_max_value = config('SENSOR_ANALOG_VALUE_MAX', default=1023, cast=int)
+    sensor_max_value = args.sensor_max_value
 
     mq135 = MQ135(sensor, sensor_max_value)
-    print_if_debug("MQ135 Sensor Initialized", DEBUG)
+    print_if_debug(f"MQ135 Sensor Initialized with max sensor value: {sensor_max_value}", DEBUG)
 
     buffer = Buffer(args.buffer_size)
     while True:

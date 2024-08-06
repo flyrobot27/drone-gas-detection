@@ -51,7 +51,8 @@ services:
       - redis
     environment:
       - REDIS_HOST=redis
-      - SENSOR_ANALOG_VALUE_MAX=65536
+      - GAS_BUFFER_SIZE=6
+      - SENSOR_ANALOG_VALUE_MAX=1023
     networks:
       - mavlink-network
 
