@@ -8,6 +8,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 # copy the rest of the files
 COPY gas_sensors.py /app/gas_sensors.py
 COPY utils.py /app/utils.py
+COPY mq135.py /app/mq135.py
 COPY .env /app/.env
 
 CMD ["python", "gas_sensors.py"]

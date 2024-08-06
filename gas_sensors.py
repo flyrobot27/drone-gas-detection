@@ -5,11 +5,11 @@ from adafruit_ads1x15.analog_in import AnalogIn
 import time
 from decouple import config
 from utils import connect_redis, convert_to_float_or_default, print_if_debug, SensorReadingFieldNames
+from mq135 import MQ135
 import argparse
-import math
+
 
 DEBUG = False
-
 def init_sensor(pin = ADS.P0) -> AnalogIn:
     """Initialize the analog gas sensor
 
@@ -29,24 +29,6 @@ def init_sensor(pin = ADS.P0) -> AnalogIn:
     sensor = AnalogIn(ads, pin)
 
     return sensor
-
-def calculate_ppm(voltage: float, temperature: float, humidity: float) -> float:
-    """Calculate the PPM value of the gas sensor
-
-    Args:
-        voltage (float): the voltage value of the sensor
-        temperature (float): the temperature value
-        humidity (float): the humidity value
-
-    Returns:
-        float: the PPM value
-    """
-    if math.isnan(temperature) or math.isnan(humidity):
-        return float('nan')
-    
-    # TODO Read the RS / RO Curve for MQ 135
-    return 0
-
 
 def main():
     parser = argparse.ArgumentParser(description='Read analog sensor data and send it to redis')
@@ -75,6 +57,9 @@ def main():
     sensor = init_sensor()
     sensor_max_value = config('SENSOR_ANALOG_VALUE_MAX', default=1023, cast=int)
 
+    mq135 = MQ135(sensor, sensor_max_value)
+    print_if_debug("MQ135 Sensor Initialized", DEBUG)
+
     while True:
         # send raw value
         r.set(SensorReadingFieldNames.GAS_SENSOR_VOLTAGE, sensor.voltage, ex=args.expire_time)
@@ -83,15 +68,25 @@ def main():
         print_if_debug("Set Sensor Voltage and Value to redis", DEBUG)
 
         # send calculated PPM value
-        # read temp and humidity from redis
+        # read temp from redis
         temperature = r.get(SensorReadingFieldNames.TEMPERATURE)
         humidity = r.get(SensorReadingFieldNames.HUMIDITY)
 
-        temperature = convert_to_float_or_default(temperature)
-        humidity = convert_to_float_or_default(humidity)
+        # assume temperature and humidity are always available. provide to 25 and 35 respectively if otherwise
+        temperature = convert_to_float_or_default(temperature, 25)
+        humidity = convert_to_float_or_default(humidity, 35)
         
-        ppm = calculate_ppm(sensor.voltage, temperature, humidity)
-        r.set(SensorReadingFieldNames.GAS_PPM, ppm, ex=args.expire_time)
+        rzero = mq135.get_rzero()
+        corrected_rzero = mq135.get_corrected_rzero(temperature, humidity)
+        resistance = mq135.get_resistance()
+        ppm = mq135.get_ppm()
+        corrected_ppm = mq135.get_corrected_ppm(temperature, humidity)
+
+        print_if_debug("MQ135 RZero: " + str(rzero) +"\t Corrected RZero: "+ str(corrected_rzero)+
+              "\t Resistance: "+ str(resistance) +"\t PPM: "+str(ppm)+
+              "\t Corrected PPM: "+str(corrected_ppm)+"ppm", DEBUG)
+
+        r.set(SensorReadingFieldNames.GAS_PPM, corrected_ppm, ex=args.expire_time)
         time.sleep(args.refresh_rate)
 
 
