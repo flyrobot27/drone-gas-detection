@@ -41,7 +41,7 @@ services:
     networks:
       - mavlink-network
 
-  gas_sensors:
+  gas-sensors:
     restart: unless-stopped
     privileged: true
     build:
@@ -54,12 +54,12 @@ services:
     networks:
       - mavlink-network
 
-  temp_humid_sensors:
+  temp-sensors:
     restart: unless-stopped
     privileged: true
     build:
       context: .
-      dockerfile: Dockerfile.temp_humid_sensors
+      dockerfile: Dockerfile.temp_sensor
     depends_on:
       - redis
     environment:
