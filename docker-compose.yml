@@ -64,6 +64,9 @@ services:
       - redis
     environment:
       - REDIS_HOST=redis
+      - TEMP_OUTLIER_CUTOFF=3
+      - TEMP_REFRESH_RATE=5
+      - TEMP_EXPIRE=15
     networks:
       - mavlink-network
 
