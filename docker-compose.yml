@@ -51,6 +51,7 @@ services:
       - redis
     environment:
       - REDIS_HOST=redis
+      - SENSOR_ANALOG_VALUE_MAX=65536
     networks:
       - mavlink-network
 
