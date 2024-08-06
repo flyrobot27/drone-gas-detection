@@ -4,7 +4,7 @@ import adafruit_ads1x15.ads1115 as ADS
 from adafruit_ads1x15.analog_in import AnalogIn
 import time
 from decouple import config
-from utils import connect_redis, convert_to_float_or_default, print_if_debug, SensorReadingFieldNames
+from utils import connect_redis, convert_to_float_or_default, print_if_debug, SensorReadingFieldNames, Buffer
 from mq135 import MQ135
 import argparse
 
@@ -45,8 +45,16 @@ def main():
                         help='Enable debug mode')
     parser.add_argument('-e', '--expire-time',
                         type=int,
-                        help='Set expire time for the key in seconds. Default to 10 seconds',
-                        default=10)
+                        help='Set expire time for the key in seconds. Default to GAS_EXPIRE_TIME env variable or 10 seconds',
+                        default=config('GAS_EXPIRE_TIME', default=10, cast=int))
+    parser.add_argument('-b', '--buffer-size',
+                        type=int,
+                        help='Buffer size for the mean value. Default to GAS_BUFFER_SIZE env variable or 10',
+                        default=config('GAS_BUFFER_SIZE', default=10, cast=int))
+    parser.add_argument('-c', '--correction-factor',
+                        type=float,
+                        help='Correction factor for the mean value. Default to GAS_CORRECTION_FACTOR env variable or 6.0',
+                        default=config('GAS_CORRECTION_FACTOR', default=6.0, cast=float))
 
     args = parser.parse_args()
     # connect to redis
@@ -60,6 +68,7 @@ def main():
     mq135 = MQ135(sensor, sensor_max_value)
     print_if_debug("MQ135 Sensor Initialized", DEBUG)
 
+    buffer = Buffer(args.buffer_size)
     while True:
         # send raw value
         r.set(SensorReadingFieldNames.GAS_SENSOR_VOLTAGE, sensor.voltage, ex=args.expire_time)
@@ -76,17 +85,24 @@ def main():
         temperature = convert_to_float_or_default(temperature, 25)
         humidity = convert_to_float_or_default(humidity, 35)
         
-        rzero = mq135.get_rzero()
-        corrected_rzero = mq135.get_corrected_rzero(temperature, humidity)
-        resistance = mq135.get_resistance()
-        ppm = mq135.get_ppm()
-        corrected_ppm = mq135.get_corrected_ppm(temperature, humidity)
+        try:
+            rzero = mq135.get_rzero()
+            corrected_rzero = mq135.get_corrected_rzero(temperature, humidity)
+            resistance = mq135.get_resistance()
+            ppm = mq135.get_ppm()
+            corrected_ppm = mq135.get_corrected_ppm(temperature, humidity)
 
-        print_if_debug("MQ135 RZero: " + str(rzero) +"\t Corrected RZero: "+ str(corrected_rzero)+
-              "\t Resistance: "+ str(resistance) +"\t PPM: "+str(ppm)+
-              "\t Corrected PPM: "+str(corrected_ppm)+"ppm", DEBUG)
+            print_if_debug("MQ135 RZero: " + str(rzero) +"\t Corrected RZero: "+ str(corrected_rzero)+
+                "\t Resistance: "+ str(resistance) +"\t PPM: "+str(ppm)+
+                "\t Corrected PPM: "+str(corrected_ppm)+"ppm", DEBUG)
+            
+            # filter value and save to redis
+            buffer.add(corrected_ppm)
+            filtered_ppm = buffer.get(m=args.correction_factor)
+            r.set(SensorReadingFieldNames.GAS_PPM, filtered_ppm, ex=args.expire_time)
+        except Exception as e:
+            print_if_debug("Error reading MQ135 sensor: " + str(e), DEBUG)
 
-        r.set(SensorReadingFieldNames.GAS_PPM, corrected_ppm, ex=args.expire_time)
         time.sleep(args.refresh_rate)
 
 

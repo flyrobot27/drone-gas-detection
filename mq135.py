@@ -7,7 +7,7 @@ class MQ135(object):
     # The load resistance on the board
     RLOAD = 10.0
     # Calibration resistance at atmospheric CO2 level
-    RZERO = 76.63
+    RZERO = 73.32
     # Parameters for calculating ppm of CO2 from sensor resistance
     PARA = 116.6020682
     PARB = 2.769034857
