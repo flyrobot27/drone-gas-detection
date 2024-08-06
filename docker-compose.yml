@@ -67,6 +67,7 @@ services:
       - TEMP_OUTLIER_CUTOFF=3
       - TEMP_REFRESH_RATE=5
       - TEMP_EXPIRE=15
+      - TEMP_BUFFER_SIZE=10
     networks:
       - mavlink-network
 

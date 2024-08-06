@@ -107,6 +107,11 @@ def main():
                         type=float,
                         help='Outlier cutoff value. Default to TEMP_OUTLIER_CUTOFF env variable or 6.0',
                         default=config('TEMP_OUTLIER_CUTOFF', default=6.0, cast=float))
+    
+    parser.add_argument('-b', '--buffer-size',
+                        type=int,
+                        help='Buffer size for the number of readings to consider. Default to TEMP_BUFFER_SIZE env variable or 4',
+                        default=config('TEMP_BUFFER_SIZE', default=4, cast=int))
 
     args = parser.parse_args()
 
@@ -123,7 +128,7 @@ def main():
     temperature = float('nan')
     humidity = float('nan')
 
-    buffer = Buffer(4)
+    buffer = Buffer(args.buffer_size)
 
     while True:
         try:
