@@ -7,7 +7,7 @@ class MQ135(object):
     # The load resistance on the board
     RLOAD = 1.0
     # Calibration resistance at atmospheric CO2 level
-    RZERO = 390.27080407661964
+    RZERO = 410.0222336538176
     # Parameters for calculating ppm of CO2 from sensor resistance
     PARA = 116.6020682
     PARB = 2.769034857
@@ -22,7 +22,7 @@ class MQ135(object):
     CORG = 1.130128205
 
     # Atmospheric CO2 level for calibration purposes
-    ATMOCO2 = 397.13
+    ATMOCO2 = 400
 
 
     def __init__(self, adc: AnalogIn, sensor_max_value: int):
