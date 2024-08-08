@@ -1,34 +1,10 @@
 import time
-import board
-import busio
-import adafruit_ads1x15.ads1115 as ADS
-from adafruit_ads1x15.analog_in import AnalogIn
-from utils import connect_redis, print_if_debug, SensorReadingFieldNames, is_none_or_whitespace, Buffer
+from utils import connect_redis, print_if_debug, is_none_or_whitespace, init_sensor, get_temp_sensor_reading, SensorReadingFieldNames, Buffer
 import argparse
 from decouple import config
-
+import adafruit_ads1x15.ads1115 as ADS
 
 DEBUG = False
-def init_sensor(pin = ADS.P3) -> AnalogIn:
-    """Initialize the analog gas sensor
-
-    Args:
-        pin (ADS, optional): sensor pin of the plugged in sensor on the ADS1115. Defaults to ADS.P0.
-
-    Returns:
-        AnalogIn: the analog sensor object
-    """
-    # Initialize the I2C bus
-    i2c = busio.I2C(board.SCL, board.SDA)
-
-    # Create the ADC object using the I2C bus
-    ads = ADS.ADS1115(i2c)
-
-    # Define the sensor (Analog input)
-    sensor = AnalogIn(ads, pin)
-
-    return sensor
-
 
 def main():
     parser = argparse.ArgumentParser(description='Read temperature and humidity sensor data and send it to redis')
@@ -71,7 +47,7 @@ def main():
     DEBUG = args.debug
    
     r = connect_redis(args.password, DEBUG)
-    sensor = init_sensor()
+    sensor = init_sensor(pin=ADS.P3)
 
     temperature = float('nan')
     humidity = float('nan')
@@ -81,7 +57,7 @@ def main():
     while True:
         try:
             voltage = sensor.voltage
-            temperature = 100 * voltage - 50
+            temperature = get_temp_sensor_reading(voltage)
             
             print_if_debug("Raw Temperature reading: " + str(temperature), DEBUG)
             print_if_debug("Raw Voltage reading: " + str(voltage), DEBUG)

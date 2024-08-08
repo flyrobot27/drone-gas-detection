@@ -5,9 +5,9 @@ from adafruit_ads1x15.analog_in import AnalogIn
 class MQ135(object):
     """ Class for dealing with MQ13 Gas Sensors """
     # The load resistance on the board
-    RLOAD = 1000.0
+    RLOAD = 1.0
     # Calibration resistance at atmospheric CO2 level
-    RZERO = 381778.9509346568
+    RZERO = 390.27080407661964
     # Parameters for calculating ppm of CO2 from sensor resistance
     PARA = 116.6020682
     PARB = 2.769034857
@@ -58,7 +58,7 @@ class MQ135(object):
         """Returns the ppm of CO2 sensed (assuming only CO2 in the air)"""
         return self.PARA * math.pow((self.get_resistance()/ self.RZERO), -self.PARB)
 
-    def get_corrected_ppm(self, temperature, humidity) -> float:
+    def get_corrected_ppm(self, temperature: float = 25, humidity: float = 35) -> float:
         """Returns the ppm of CO2 sensed (assuming only CO2 in the air)
         corrected for temperature/humidity"""
         return self.PARA * math.pow((self.get_corrected_resistance(temperature, humidity)/ self.RZERO), -self.PARB)
@@ -67,7 +67,7 @@ class MQ135(object):
         """Returns the resistance RZero of the sensor (in kOhms) for calibratioin purposes"""
         return self.get_resistance() * math.pow((self.ATMOCO2/self.PARA), (1./self.PARB))
 
-    def get_corrected_rzero(self, temperature, humidity) -> float:
+    def get_corrected_rzero(self, temperature: float = 25, humidity: float = 35) -> float:
         """Returns the resistance RZero of the sensor (in kOhms) for calibration purposes
         corrected for temperature/humidity"""
         return self.get_corrected_resistance(temperature, humidity) * math.pow((self.ATMOCO2/self.PARA), (1./self.PARB))

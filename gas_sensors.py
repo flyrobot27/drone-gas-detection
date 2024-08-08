@@ -7,6 +7,7 @@ from decouple import config
 from utils import connect_redis, convert_to_float_or_default, print_if_debug, SensorReadingFieldNames, Buffer
 from mq135 import MQ135
 import argparse
+import adafruit_ads1x15.ads1115 as ADS
 
 
 DEBUG = False
@@ -66,7 +67,7 @@ def main():
     DEBUG = args.debug
 
     r = connect_redis(args.password, DEBUG)
-    sensor = init_sensor()
+    sensor = init_sensor(pin=ADS.P0)
     sensor_max_value = args.sensor_max_value
 
     mq135 = MQ135(sensor, sensor_max_value)

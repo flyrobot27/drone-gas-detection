@@ -4,6 +4,10 @@ from enum import Enum
 from typing import Tuple
 from typing_extensions import Self
 import numpy as np
+import board
+import busio
+import adafruit_ads1x15.ads1115 as ADS
+from adafruit_ads1x15.analog_in import AnalogIn
 
 class Buffer:
     """A circular buffer to store values and get the mean of the buffer without the nan values
@@ -76,6 +80,37 @@ class SensorReadingFieldNames(str, Enum):
             Tuple[Self]: iterable of field names in SensorReadingFieldNames
         """
         return tuple(SensorReadingFieldNames)
+
+def init_sensor(pin: ADS) -> AnalogIn:
+    """Initialize the analog gas sensor
+
+    Args:
+        pin (ADS): sensor pin of the plugged in sensor on the ADS1115.
+
+    Returns:
+        AnalogIn: the analog sensor object
+    """
+    # Initialize the I2C bus
+    i2c = busio.I2C(board.SCL, board.SDA)
+
+    # Create the ADC object using the I2C bus
+    ads = ADS.ADS1115(i2c)
+
+    # Define the sensor (Analog input)
+    sensor = AnalogIn(ads, pin)
+
+    return sensor
+
+def get_temp_sensor_reading(voltage: float) -> float:
+    """Get the temperature sensor reading
+
+    Args:
+        voltage (float): voltage reading
+
+    Returns:
+        float: temperature reading
+    """
+    return 100 * voltage - 50
 
 
 def connect_redis(password: str, debug: bool = False) -> redis.Redis:
