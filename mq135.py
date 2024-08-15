@@ -1,5 +1,6 @@
 import math
 from adafruit_ads1x15.analog_in import AnalogIn
+from decouple import config
 
 # Modified from the following repository: https://github.com/rubfi/MQ135
 class MQ135(object):
@@ -7,7 +8,7 @@ class MQ135(object):
     # The load resistance on the board
     RLOAD = 1.0
     # Calibration resistance at atmospheric CO2 level
-    RZERO = 410.0222336538176
+    RZERO = config('RZERO', cast=float)
     # Parameters for calculating ppm of CO2 from sensor resistance
     PARA = 116.6020682
     PARB = 2.769034857
@@ -22,7 +23,7 @@ class MQ135(object):
     CORG = 1.130128205
 
     # Atmospheric CO2 level for calibration purposes
-    ATMOCO2 = 400
+    ATMOCO2 = config('ATMOCO2', cast=float)
 
 
     def __init__(self, adc: AnalogIn, sensor_max_value: int):
